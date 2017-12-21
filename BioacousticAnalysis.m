@@ -43,7 +43,6 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
 % --- Executes just before BioacousticAnalysis is made visible.
 function BioacousticAnalysis_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -61,7 +60,6 @@ guidata(hObject, handles);
 % UIWAIT makes BioacousticAnalysis wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = BioacousticAnalysis_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -78,13 +76,14 @@ function StartButton_Callback(hObject, eventdata, handles)
 % hObject    handle to StartButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 global s
 global lh
 global i;i=1;
-global data2;
+% global data2;
 
 devices = daq.getDevices;%%Shows the available devices
-channels=devices.Subsystems(1,1).ChannelNames(1:8);%Create a vector with the name of the channels that are going to be used
+channels=devices.Subsystems(1,1).ChannelNames([6,7,14,15]);%Create a vector with the name of the channels that are going to be used
 s = daq.createSession('ni');
 s.Rate = 44100;
 s.IsContinuous = true; %To get the signals until stop the sesion and monitor the name of the channels
@@ -94,19 +93,18 @@ ch=addAnalogInputChannel(s,'Dev1', channels, 'Voltage');
 %plot
 for i=1:length(ch)
     ch(i).InputType='SingleEnded'; %Configures every input channel to measure the signal compared to the reference
-    m(i,:)=ones(1,1000)*i;
+    i
 end
 
-axes(handles.FFTAxes)
-hp=mesh(1:1000,1:length(ch),m); %Generating a mesh to watch all channels
-T = title('Discrete FFT Plot');
-xlabel('Frequency (Hz)')
-zlabel('| FFT |')
-ylabel('Channel')
-% axis([100 600 1 8 0 600])
-grid on;
+% hp=mesh(1:1000,1:length(ch),m); %Generating a mesh to watch all channels
+% T = title('Discrete FFT Plot');
+% xlabel('Frequency (Hz)')
+% zlabel('| FFT |')
+% ylabel('Channel')
+% % axis([100 600 1 8 0 600])
+% grid on;
 
-plotFFT = @(src, event) continuous_fft(event.Data, src.Rate, hp);
+plotFFT = @(src, event) continuous_fft(event.Data, src.Rate);
 lh = addlistener(s,'DataAvailable', plotFFT); 
 
 startBackground(s);
@@ -120,7 +118,7 @@ global s
 global lh
 global data2
 
-save('data2.mat','data2','-mat')
+% save('data2.mat','data2','-mat')
 stop(s);
 s.IsContinuous = false;delete(lh);
 
