@@ -56,6 +56,7 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+ % Inicialization of the variable before the GUI made visible
 
 % UIWAIT makes BioacousticAnalysis wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -76,38 +77,47 @@ function StartButton_Callback(hObject, eventdata, handles)
 % hObject    handle to StartButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-global s
-global lh
-global i;i=1;
-% global data2;
-
+global devices
 devices = daq.getDevices;%%Shows the available devices
-channels=devices.Subsystems(1,1).ChannelNames([6,7,14,15]);%Create a vector with the name of the channels that are going to be used
-s = daq.createSession('ni');
-s.Rate = 44100;
-s.IsContinuous = true; %To get the signals until stop the sesion and monitor the name of the channels
-ch=addAnalogInputChannel(s,'Dev1', channels, 'Voltage');
+if isempty(devices)
+    msgbox('There is no daq devices','Warning')
+else
+    global s
+    global lh
+    global i;i=1;
+    global channels
+    % global data2;
+    %Create a vector with the name of the channels that are going to be used
+    s = daq.createSession('ni');
+    s.Rate = 44100;
+    s.IsContinuous = true; %To get the signals until stop the sesion and monitor the name of the channels
+    if isempty(channels)        
+        msgbox('There are no mics selected','Warning')
+    else 
+        ch=addAnalogInputChannel(s,'Dev1', channels, 'Voltage');
+        %For each channel change the configuration and create the vector for the
+        %plot
+        for i=1:length(ch)
+            ch(i).InputType='SingleEnded'; %Configures every input channel to measure the signal compared to the reference
+            i
+        end
 
-%For each channel change the configuration and create the vector for the
-%plot
-for i=1:length(ch)
-    ch(i).InputType='SingleEnded'; %Configures every input channel to measure the signal compared to the reference
-    i
+        % hp=mesh(1:1000,1:length(ch),m); %Generating a mesh to watch all channels
+        % T = title('Discrete FFT Plot');
+        % xlabel('Frequency (Hz)')
+        % zlabel('| FFT |')
+        % ylabel('Channel')
+        % % axis([100 600 1 8 0 600])
+        % grid on;
+
+        plotFFT = @(src, event) continuous_fft(event.Data, src.Rate);
+        lh = addlistener(s,'DataAvailable',plotFFT); 
+
+        startBackground(s);
+    end
+    
 end
 
-% hp=mesh(1:1000,1:length(ch),m); %Generating a mesh to watch all channels
-% T = title('Discrete FFT Plot');
-% xlabel('Frequency (Hz)')
-% zlabel('| FFT |')
-% ylabel('Channel')
-% % axis([100 600 1 8 0 600])
-% grid on;
-
-plotFFT = @(src, event) continuous_fft(event.Data, src.Rate);
-lh = addlistener(s,'DataAvailable', plotFFT); 
-
-startBackground(s);
 
 % --- Executes on button press in PauseButton.
 function PauseButton_Callback(hObject, eventdata, handles)
@@ -116,9 +126,10 @@ function PauseButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global s
 global lh
-global data2
-
-% save('data2.mat','data2','-mat')
+global data3
+% 
+uisave('data3')
+clear data3
 stop(s);
 s.IsContinuous = false;delete(lh);
 
@@ -127,6 +138,16 @@ function Mic1_Callback(hObject, eventdata, handles)
 % hObject    handle to Mic1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global channels
+mics='ai13';
+if hObject.Value==1        
+    setChannels(mics,hObject.Value);    
+else
+    setChannels(mics,hObject.Value);
+end
+
+
+
 
 % Hint: get(hObject,'Value') returns toggle state of Mic1
 
@@ -137,6 +158,13 @@ function Mic2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of Mic2
+global channels
+mics='ai5';
+if hObject.Value==1        
+    setChannels(mics,hObject.Value);    
+else
+    setChannels(mics,hObject.Value);
+end
 
 % --- Executes on button press in Mic3.
 function Mic3_Callback(hObject, eventdata, handles)
@@ -145,6 +173,13 @@ function Mic3_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of Mic3
+global channels
+mics='ai14';
+if hObject.Value==1        
+    setChannels(mics,hObject.Value);    
+else
+    setChannels(mics,hObject.Value);
+end
 
 % --- Executes on button press in Mic4.
 function Mic4_Callback(hObject, eventdata, handles)
@@ -153,6 +188,13 @@ function Mic4_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of Mic4
+global channels
+mics='ai6';
+if hObject.Value==1        
+    setChannels(mics,hObject.Value);    
+else
+    setChannels(mics,hObject.Value);
+end
 
 % --- Executes on button press in Mic5.
 function Mic5_Callback(hObject, eventdata, handles)

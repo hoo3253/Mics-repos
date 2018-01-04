@@ -2,8 +2,9 @@ function continuous_fft(data, Fs)
 % Calculate FFT(data) and update plot with it. 
 global i
 global data2
-% data2(i:i+length(data)-1,:)=data;
-% i=i+length(data);
+global data3
+data3(i:i+length(data)-1,:)=data;
+i=i+length(data);
 
 lengthOfData = length(data);
 data2=data;
@@ -31,13 +32,11 @@ gfreq = freqRange(1:plotRange);  % Only plotting upto n/2 (as other half is the 
 subplot(2,1,1)
 plot(data2)
 % axis([0 4500 -4 4])
-
-% axis([0 4096 -1 1])
 grid on;
 
 subplot(2,1,2)
 plot(gfreq,abs_h)
-axis([0 1500 0 3000])
+axis([200 1500 0 300])
 ylabel('|FT|')
 grid on;
 % 
