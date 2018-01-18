@@ -36,7 +36,7 @@ grid on;
 
 subplot(2,1,2)
 plot(gfreq,abs_h)
-axis([200 1500 0 300])
+axis([200 1500 0 100])
 ylabel('|FT|')
 grid on;
 % 

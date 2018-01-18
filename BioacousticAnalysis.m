@@ -80,21 +80,19 @@ function StartButton_Callback(hObject, eventdata, handles)
 global devices
 devices = daq.getDevices;%%Shows the available devices
 if isempty(devices)
-    msgbox('There is no daq devices','Warning')
+    msgbox('There is no daq devices','Warning')%% if there are no devices connected, it shows a warning message
 else
-    global s
+    global s 
     global lh
     global i;i=1;
-    global channels
-    % global data2;
-    %Create a vector with the name of the channels that are going to be used
-    s = daq.createSession('ni');
-    s.Rate = 44100;
+    global channels  %Create a vector with the name of the channels that are going to be used
+    s = daq.createSession('ni'); %name of the session
+    s.Rate = 11025;%sample rate
     s.IsContinuous = true; %To get the signals until stop the sesion and monitor the name of the channels
-    if isempty(channels)        
+    if isempty(channels)%the value of channels is given by the function setChannels triggered by the checkbox mic        
         msgbox('There are no mics selected','Warning')
     else 
-        ch=addAnalogInputChannel(s,'Dev1', channels, 'Voltage');
+        ch=addAnalogInputChannel(s,'Dev1', channels, 'Voltage');%% ch is an object composed by the analog inputs named by channels 
         %For each channel change the configuration and create the vector for the
         %plot
         for i=1:length(ch)
@@ -102,18 +100,9 @@ else
             i
         end
 
-        % hp=mesh(1:1000,1:length(ch),m); %Generating a mesh to watch all channels
-        % T = title('Discrete FFT Plot');
-        % xlabel('Frequency (Hz)')
-        % zlabel('| FFT |')
-        % ylabel('Channel')
-        % % axis([100 600 1 8 0 600])
-        % grid on;
-
         plotFFT = @(src, event) continuous_fft(event.Data, src.Rate);
-        lh = addlistener(s,'DataAvailable',plotFFT); 
-
-        startBackground(s);
+        lh = addlistener(s,'DataAvailable',plotFFT); %listener triggered by session s amd executes fuction plotFFT
+        startBackground(s); %starts the background session
     end
     
 end
@@ -126,12 +115,16 @@ function PauseButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global s
 global lh
-global data3
+
+delete(lh);
+stop(s);
+s.IsContinuous = false;
+
 % 
+
+global data3
 uisave('data3')
 clear data3
-stop(s);
-s.IsContinuous = false;delete(lh);
 
 % --- Executes on button press in Mic1.
 function Mic1_Callback(hObject, eventdata, handles)
